@@ -3,3 +3,4 @@ pandas
 openpyxl
 requests
 plotly
+openai==1.35.0
