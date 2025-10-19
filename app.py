@@ -19,7 +19,7 @@ st.markdown("---")
 # Cargar datos
 @st.cache_data
 def cargar_datos():
-    df = pd.read_excel("CypressPbP.xlsx", sheet_name="Input")
+    df = pd.read_excel("Scouting SamplePbP.xlsx", sheet_name="Input")
     # Limpiar nombres de columnas
     df.columns = df.columns.str.strip()
     return df
