@@ -3,17 +3,17 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
-import openai
+from openai import OpenAI
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Análisis Deportivo - Cypress",
+    page_title="Análisis Deportivo - Scouting Sample",
     page_icon="⚽",
     layout="wide"
 )
 
 # Título principal
-st.title("⚽ Análisis de Eventos Deportivos - Cypress")
+st.title("⚽ Análisis de Eventos Deportivos - Scouting Sample")
 st.markdown("---")
 
 # Cargar datos
@@ -165,8 +165,8 @@ st.markdown("---")
 st.subheader("🤖 Análisis con Inteligencia Artificial")
 
 # Verificar si hay API Key disponible
-def get_openai_api_key():
-    """Obtiene la API Key de OpenAI"""
+def get_openai_client():
+    """Obtiene el cliente de OpenAI con la API Key"""
     api_key = None
     
     # Intentar obtener de st.secrets (producción en Streamlit Cloud)
@@ -179,7 +179,10 @@ def get_openai_api_key():
     if not api_key:
         api_key = os.environ.get("OPENAI_API_KEY")
     
-    return api_key
+    if not api_key:
+        return None
+    
+    return OpenAI(api_key=api_key)
 
 # Función para construir el prompt de análisis
 def construir_prompt_analisis(df_filtrado, variables_seleccionadas, venue, opponent, tipo="rapido"):
@@ -230,19 +233,16 @@ Sé específico con los datos y proporciona insights profundos."""
 # Función para generar análisis
 def generar_analisis(prompt, tipo="rapido"):
     """Genera el análisis usando OpenAI"""
-    api_key = get_openai_api_key()
+    client = get_openai_client()
     
-    if not api_key:
+    if not client:
         st.error("⚠️ No se encontró la API Key de OpenAI. Configúrala en los secrets de Streamlit o como variable de entorno.")
         return None
     
     try:
-        # Configurar la API key
-        openai.api_key = api_key
-        
         max_tokens = 300 if tipo == "rapido" else 800
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Eres un analista táctico de fútbol experto en interpretar datos estadísticos."},
