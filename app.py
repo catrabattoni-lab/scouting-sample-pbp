@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
-from openai import OpenAI
+import openai
 
 # Configuración de la página
 st.set_page_config(
@@ -165,8 +165,8 @@ st.markdown("---")
 st.subheader("🤖 Análisis con Inteligencia Artificial")
 
 # Verificar si hay API Key disponible
-def get_openai_client():
-    """Obtiene el cliente de OpenAI con la API Key"""
+def get_openai_api_key():
+    """Obtiene la API Key de OpenAI"""
     api_key = None
     
     # Intentar obtener de st.secrets (producción en Streamlit Cloud)
@@ -179,10 +179,7 @@ def get_openai_client():
     if not api_key:
         api_key = os.environ.get("OPENAI_API_KEY")
     
-    if not api_key:
-        return None
-    
-    return OpenAI(api_key=api_key)
+    return api_key
 
 # Función para construir el prompt de análisis
 def construir_prompt_analisis(df_filtrado, variables_seleccionadas, venue, opponent, tipo="rapido"):
@@ -233,16 +230,19 @@ Sé específico con los datos y proporciona insights profundos."""
 # Función para generar análisis
 def generar_analisis(prompt, tipo="rapido"):
     """Genera el análisis usando OpenAI"""
-    client = get_openai_client()
+    api_key = get_openai_api_key()
     
-    if not client:
+    if not api_key:
         st.error("⚠️ No se encontró la API Key de OpenAI. Configúrala en los secrets de Streamlit o como variable de entorno.")
         return None
     
     try:
+        # Configurar la API key
+        openai.api_key = api_key
+        
         max_tokens = 300 if tipo == "rapido" else 800
         
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Eres un analista táctico de fútbol experto en interpretar datos estadísticos."},
